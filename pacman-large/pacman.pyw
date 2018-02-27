@@ -1373,25 +1373,21 @@ def CheckIfCloseButton(events):
 def CheckInputs():
 
 	if thisGame.mode == 1:
-		if pygame.key.get_pressed()[ pygame.K_RIGHT ] or (js1!=None and js1.get_hat(0)[0] == 1):
-			# if not (player.velX == player.speed and player.velY == 0) and not thisLevel.CheckIfHitWall((player.x + player.speed, player.y), (player.nearestRow, player.nearestCol)):
-				player.nextVelX = player.speed
-				player.nextVelY = 0
+		if pygame.key.get_pressed()[ pygame.K_RIGHT ] or (js1!=None and ((js1.get_numhats() > 0 and js1.get_hat(0)[0] == 1) or (js1.get_numaxes() > 0 and js1.get_axis(JS_XAXIS)>0.8))):
+			player.nextVelX = player.speed
+			player.nextVelY = 0
 
-		elif pygame.key.get_pressed()[ pygame.K_LEFT ] or (js2!=None and js2.get_hat(0)[0] == -1):
-			# if not (player.velX == -player.speed and player.velY == 0) and not thisLevel.CheckIfHitWall((player.x - player.speed, player.y), (player.nearestRow, player.nearestCol)):
-				player.nextVelX = -player.speed
-				player.nextVelY = 0
+		elif pygame.key.get_pressed()[ pygame.K_LEFT ] or (js2!=None and ((js2.get_numhats() > 0 and js2.get_hat(0)[0] == -1) or (js2.get_numaxes() > 0 and js2.get_axis(JS_XAXIS)<-0.8))):
+			player.nextVelX = -player.speed
+			player.nextVelY = 0
 
-		elif pygame.key.get_pressed()[ pygame.K_DOWN ] or (js3!=None and js3.get_hat(0)[1] == -1):
-			# if not (player.velX == 0 and player.velY == player.speed) and not thisLevel.CheckIfHitWall((player.x, player.y + player.speed), (player.nearestRow, player.nearestCol)):
-				player.nextVelX = 0
-				player.nextVelY = player.speed
+		elif pygame.key.get_pressed()[ pygame.K_DOWN ] or (js3!=None and ((js3.get_numhats() > 0 and js3.get_hat(0)[1] == -1) or (js3.get_numaxes() > 0 and js3.get_axis(JS_YAXIS)>0.8))):
+			player.nextVelX = 0
+			player.nextVelY = player.speed
 
-		elif pygame.key.get_pressed()[ pygame.K_UP ] or (js4!=None and js4.get_hat(0)[1] == 1):
-			# if not (player.velX == 0 and player.velY == -player.speed) and not thisLevel.CheckIfHitWall((player.x, player.y - player.speed), (player.nearestRow, player.nearestCol)):
-				player.nextVelX = 0
-				player.nextVelY = -player.speed
+		elif pygame.key.get_pressed()[ pygame.K_UP ] or (js4!=None and ((js4.get_numhats() > 0 and js4.get_hat(0)[1] == 1) or (js4.get_numaxes() > 0 and js4.get_axis(JS_YAXIS)<-0.8))):
+			player.nextVelX = 0
+			player.nextVelY = -player.speed
 
 		if player.nextVelX == player.speed and not thisLevel.CheckIfHitWall((player.x + player.speed, player.y), (player.nearestRow, player.nearestCol)):
 			player.velX = player.speed
