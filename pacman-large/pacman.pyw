@@ -1050,6 +1050,7 @@ class level ():
 
 
 					elif result == tileID[ 'pellet-power' ]:
+						RandomizeControls()
 						# got a power pellet
 						thisLevel.SetMapTile((iRow, iCol), 0)
 						pygame.mixer.stop()
@@ -1472,6 +1473,10 @@ def GetCrossRef ():
 			# print str_splitBySpace[0] + " is married to " + str_splitBySpace[1]
 		lineNum += 1
 
+def RandomizeControls():
+	controllers = [js1, js2, js3, js4]
+	random.shuffle(controllers)
+	[js1, js2, js3, js4] = controllers
 
 #      __________________
 # ___/  main code block  \_____________________________________________________
