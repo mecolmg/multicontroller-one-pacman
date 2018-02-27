@@ -113,8 +113,8 @@ class game ():
 				if len(name)>22: name=name[:22]
 				hs.append((score,name))
 			f.close()
-			if len(hs)>6: hs=hs[:6]
-			while len(hs)<6: hs.append((0,""))
+			if len(hs)>4: hs=hs[:4]
+			while len(hs)<4: hs.append((0,""))
 			return hs
 		except IOError:
 			return self.defaulthiscorelist()
@@ -1504,7 +1504,7 @@ thisGame = game()
 thisLevel = level()
 thisLevel.LoadLevel( thisGame.GetLevelNum() )
 
-window = pygame.display.set_mode( thisGame.screenSize, pygame.HWSURFACE | pygame.DOUBLEBUF )
+window = pygame.display.set_mode( thisGame.screenSize, pygame.HWSURFACE | pygame.DOUBLEBUF | RESIZABLE)
 
 # initialise the joystick
 jsCount = pygame.joystick.get_count()
