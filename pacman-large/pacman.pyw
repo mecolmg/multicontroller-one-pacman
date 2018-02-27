@@ -31,7 +31,7 @@ NO_GIF_TILES=[23]
 
 NO_WX=0 # if set, the high-score code will not attempt to ask the user his name
 USER_NAME="User" # USER_NAME=os.getlogin() # the default user name if wx fails to load or NO_WX
-                 # Oops! os.getlogin() only works if you launch from a terminal
+								 # Oops! os.getlogin() only works if you launch from a terminal
 # constants for the high-score display
 HS_FONT_SIZE=14
 HS_LINE_HEIGHT=16
@@ -95,86 +95,85 @@ ghostcolor[5] = (255, 255, 255, 255) # white, flashing ghost
 # ___/  class definitions  \_______________________________________________
 
 class game ():
+	def defaulthiscorelist(self):
+		return [ (100000,"David") , (80000,"Andy") , (60000,"Count Pacula") , (40000,"Cleopacra") , (20000,"Brett Favre") , (10000,"Sergei Pachmaninoff") ]
 
-        def defaulthiscorelist(self):
-                return [ (100000,"David") , (80000,"Andy") , (60000,"Count Pacula") , (40000,"Cleopacra") , (20000,"Brett Favre") , (10000,"Sergei Pachmaninoff") ]
+	def gethiscores(self):
+		"""If res/hiscore.txt exists, read it. If not, return the default high scores.
+			 Output is [ (score,name) , (score,name) , .. ]. Always 6 entries."""
+		try:
+			f=open(os.path.join(SCRIPT_PATH,"res","hiscore.txt"))
+			hs=[]
+			for line in f:
+				while len(line)>0 and (line[0]=="\n" or line[0]=="\r"): line=line[1:]
+				while len(line)>0 and (line[-1]=="\n" or line[-1]=="\r"): line=line[:-1]
+				score=int(line.split(" ")[0])
+				name=line.partition(" ")[2]
+				if score>99999999: score=99999999
+				if len(name)>22: name=name[:22]
+				hs.append((score,name))
+			f.close()
+			if len(hs)>6: hs=hs[:6]
+			while len(hs)<6: hs.append((0,""))
+			return hs
+		except IOError:
+			return self.defaulthiscorelist()
 
-        def gethiscores(self):
-                """If res/hiscore.txt exists, read it. If not, return the default high scores.
-                   Output is [ (score,name) , (score,name) , .. ]. Always 6 entries."""
-                try:
-                  f=open(os.path.join(SCRIPT_PATH,"res","hiscore.txt"))
-                  hs=[]
-                  for line in f:
-                    while len(line)>0 and (line[0]=="\n" or line[0]=="\r"): line=line[1:]
-                    while len(line)>0 and (line[-1]=="\n" or line[-1]=="\r"): line=line[:-1]
-                    score=int(line.split(" ")[0])
-                    name=line.partition(" ")[2]
-                    if score>99999999: score=99999999
-                    if len(name)>22: name=name[:22]
-                    hs.append((score,name))
-                  f.close()
-                  if len(hs)>6: hs=hs[:6]
-                  while len(hs)<6: hs.append((0,""))
-                  return hs
-                except IOError:
-                  return self.defaulthiscorelist()
+	def writehiscores(self,hs):
+		"""Given a new list, write it to the default file."""
+		fname=os.path.join(SCRIPT_PATH,"res","hiscore.txt")
+		f=open(fname,"w")
+		for line in hs:
+			f.write(str(line[0])+" "+line[1]+"\n")
+		f.close()
 
-        def writehiscores(self,hs):
-                """Given a new list, write it to the default file."""
-                fname=os.path.join(SCRIPT_PATH,"res","hiscore.txt")
-                f=open(fname,"w")
-                for line in hs:
-                  f.write(str(line[0])+" "+line[1]+"\n")
-                f.close()
+	def getplayername(self):
+		"""Ask the player his name, to go on the high-score list."""
+		if NO_WX: return USER_NAME
+		try:
+			import wx
+		except:
+			print "Pacman Error: No module wx. Can not ask the user his name!"
+			print "     :(       Download wx from http://www.wxpython.org/"
+			print "     :(       To avoid seeing this error again, set NO_WX in file pacman.pyw."
+			return USER_NAME
+		app=wx.App(None)
+		dlog=wx.TextEntryDialog(None,"You made the high-score list! Name:")
+		dlog.ShowModal()
+		name=dlog.GetValue()
+		dlog.Destroy()
+		app.Destroy()
+		return name
 
-        def getplayername(self):
-                """Ask the player his name, to go on the high-score list."""
-                if NO_WX: return USER_NAME
-                try:
-                  import wx
-                except:
-                  print "Pacman Error: No module wx. Can not ask the user his name!"
-                  print "     :(       Download wx from http://www.wxpython.org/"
-                  print "     :(       To avoid seeing this error again, set NO_WX in file pacman.pyw."
-                  return USER_NAME
-                app=wx.App(None)
-                dlog=wx.TextEntryDialog(None,"You made the high-score list! Name:")
-                dlog.ShowModal()
-                name=dlog.GetValue()
-                dlog.Destroy()
-                app.Destroy()
-                return name
+	def updatehiscores(self,newscore):
+		"""Add newscore to the high score list, if appropriate."""
+		hs=self.gethiscores()
+		for line in hs:
+			if newscore>=line[0]:
+				hs.insert(hs.index(line),(newscore,self.getplayername()))
+				hs.pop(-1)
+				break
+		self.writehiscores(hs)
 
-        def updatehiscores(self,newscore):
-                """Add newscore to the high score list, if appropriate."""
-                hs=self.gethiscores()
-                for line in hs:
-                  if newscore>=line[0]:
-                    hs.insert(hs.index(line),(newscore,self.getplayername()))
-                    hs.pop(-1)
-                    break
-                self.writehiscores(hs)
+	def makehiscorelist(self):
+		"Read the High-Score file and convert it to a useable Surface."
+		# My apologies for all the hard-coded constants.... -Andy
+		f=pygame.font.Font(os.path.join(SCRIPT_PATH,"res","VeraMoBd.ttf"),HS_FONT_SIZE)
+		scoresurf=pygame.Surface((HS_WIDTH,HS_HEIGHT),pygame.SRCALPHA)
+		scoresurf.set_alpha(HS_ALPHA)
+		linesurf=f.render(" "*18+"HIGH SCORES",1,(255,255,0))
+		scoresurf.blit(linesurf,(0,0))
+		hs=self.gethiscores()
+		vpos=0
+		for line in hs:
+			vpos+=HS_LINE_HEIGHT
+			linesurf=f.render(line[1].rjust(22)+str(line[0]).rjust(9),1,(255,255,255))
+			scoresurf.blit(linesurf,(0,vpos))
+		return scoresurf
 
-        def makehiscorelist(self):
-                "Read the High-Score file and convert it to a useable Surface."
-                # My apologies for all the hard-coded constants.... -Andy
-                f=pygame.font.Font(os.path.join(SCRIPT_PATH,"res","VeraMoBd.ttf"),HS_FONT_SIZE)
-                scoresurf=pygame.Surface((HS_WIDTH,HS_HEIGHT),pygame.SRCALPHA)
-                scoresurf.set_alpha(HS_ALPHA)
-                linesurf=f.render(" "*18+"HIGH SCORES",1,(255,255,0))
-                scoresurf.blit(linesurf,(0,0))
-                hs=self.gethiscores()
-                vpos=0
-                for line in hs:
-                  vpos+=HS_LINE_HEIGHT
-                  linesurf=f.render(line[1].rjust(22)+str(line[0]).rjust(9),1,(255,255,255))
-                  scoresurf.blit(linesurf,(0,vpos))
-                return scoresurf
-
-        def drawmidgamehiscores(self):
-                """Redraw the high-score list image after pacman dies."""
-                self.imHiscores=self.makehiscorelist()
+	def drawmidgamehiscores(self):
+		"""Redraw the high-score list image after pacman dies."""
+		self.imHiscores=self.makehiscorelist()
 
 	def __init__ (self):
 		self.levelNum = 0
@@ -813,6 +812,8 @@ class pacman ():
 		self.y = 0
 		self.velX = 0
 		self.velY = 0
+		self.nextVelX = 0
+		self.nextVelY = 0
 		self.speed = 3
 
 		self.nearestRow = 0
@@ -1182,7 +1183,7 @@ class level ():
 						screen.blit (thisGame.imLogo, (col * TILE_WIDTH - thisGame.screenPixelOffset[0], row * TILE_HEIGHT - thisGame.screenPixelOffset[1]) )
 
 					elif useTile == tileID['hiscores']:
-					        screen.blit(thisGame.imHiscores,(col*TILE_WIDTH-thisGame.screenPixelOffset[0],row*TILE_HEIGHT-thisGame.screenPixelOffset[1]))
+									screen.blit(thisGame.imHiscores,(col*TILE_WIDTH-thisGame.screenPixelOffset[0],row*TILE_HEIGHT-thisGame.screenPixelOffset[1]))
 
 					else:
 						screen.blit (tileIDImage[ useTile ], (col * TILE_WIDTH - thisGame.screenPixelOffset[0], row * TILE_HEIGHT - thisGame.screenPixelOffset[1]) )
@@ -1201,21 +1202,21 @@ class level ():
 
 		for line in f:
 
-  		  lineNum += 1
+			lineNum += 1
 
 			# print " ------- Level Line " + str(lineNum) + " -------- "
-		  while len(line)>0 and (line[-1]=="\n" or line[-1]=="\r"): line=line[:-1]
-		  while len(line)>0 and (line[0]=="\n" or line[0]=="\r"): line=line[1:]
-		  str_splitBySpace = line.split(' ')
+			while len(line)>0 and (line[-1]=="\n" or line[-1]=="\r"): line=line[:-1]
+			while len(line)>0 and (line[0]=="\n" or line[0]=="\r"): line=line[1:]
+			str_splitBySpace = line.split(' ')
 
 
-		  j = str_splitBySpace[0]
+			j = str_splitBySpace[0]
 
-		  if (j == "'" or j == ""):
+			if (j == "'" or j == ""):
 				# comment / whitespace line
 				# print " ignoring comment line.. "
 				useLine = False
-		  elif j == "#":
+			elif j == "#":
 				# special divider / attribute line
 				useLine = False
 
@@ -1266,19 +1267,19 @@ class level ():
 
 				elif firstWord == "startleveldata":
 					isReadingLevelData = True
-				        # print "Level data has begun"
+								# print "Level data has begun"
 					rowNum = 0
 
 				elif firstWord == "endleveldata":
 					isReadingLevelData = False
 					# print "Level data has ended"
 
-		  else:
+			else:
 				useLine = True
 
 
 			# this is a map data line
-		  if useLine == True:
+			if useLine == True:
 
 				if isReadingLevelData == True:
 
@@ -1372,25 +1373,42 @@ def CheckIfCloseButton(events):
 def CheckInputs():
 
 	if thisGame.mode == 1:
-		if pygame.key.get_pressed()[ pygame.K_RIGHT ] or (js1!=None and js1.get_axis(JS_XAXIS)>0.5):
-			if not (player.velX == player.speed and player.velY == 0) and not thisLevel.CheckIfHitWall((player.x + player.speed, player.y), (player.nearestRow, player.nearestCol)):
-				player.velX = player.speed
-				player.velY = 0
+		if pygame.key.get_pressed()[ pygame.K_RIGHT ] or (js1!=None and js1.get_hat(0)[0] == 1):
+			# if not (player.velX == player.speed and player.velY == 0) and not thisLevel.CheckIfHitWall((player.x + player.speed, player.y), (player.nearestRow, player.nearestCol)):
+				player.nextVelX = player.speed
+				player.nextVelY = 0
 
-		elif pygame.key.get_pressed()[ pygame.K_LEFT ] or (js2!=None and js2.get_axis(JS_XAXIS)<-0.5):
-			if not (player.velX == -player.speed and player.velY == 0) and not thisLevel.CheckIfHitWall((player.x - player.speed, player.y), (player.nearestRow, player.nearestCol)):
-				player.velX = -player.speed
-				player.velY = 0
+		elif pygame.key.get_pressed()[ pygame.K_LEFT ] or (js2!=None and js2.get_hat(0)[0] == -1):
+			# if not (player.velX == -player.speed and player.velY == 0) and not thisLevel.CheckIfHitWall((player.x - player.speed, player.y), (player.nearestRow, player.nearestCol)):
+				player.nextVelX = -player.speed
+				player.nextVelY = 0
 
-		elif pygame.key.get_pressed()[ pygame.K_DOWN ] or (js3!=None and js3.get_axis(JS_YAXIS)>0.5):
-			if not (player.velX == 0 and player.velY == player.speed) and not thisLevel.CheckIfHitWall((player.x, player.y + player.speed), (player.nearestRow, player.nearestCol)):
-				player.velX = 0
-				player.velY = player.speed
+		elif pygame.key.get_pressed()[ pygame.K_DOWN ] or (js3!=None and js3.get_hat(0)[1] == -1):
+			# if not (player.velX == 0 and player.velY == player.speed) and not thisLevel.CheckIfHitWall((player.x, player.y + player.speed), (player.nearestRow, player.nearestCol)):
+				player.nextVelX = 0
+				player.nextVelY = player.speed
 
-		elif pygame.key.get_pressed()[ pygame.K_UP ] or (js4!=None and js4.get_axis(JS_YAXIS)<-0.5):
-			if not (player.velX == 0 and player.velY == -player.speed) and not thisLevel.CheckIfHitWall((player.x, player.y - player.speed), (player.nearestRow, player.nearestCol)):
-				player.velX = 0
-				player.velY = -player.speed
+		elif pygame.key.get_pressed()[ pygame.K_UP ] or (js4!=None and js4.get_hat(0)[1] == 1):
+			# if not (player.velX == 0 and player.velY == -player.speed) and not thisLevel.CheckIfHitWall((player.x, player.y - player.speed), (player.nearestRow, player.nearestCol)):
+				player.nextVelX = 0
+				player.nextVelY = -player.speed
+
+		if player.nextVelX == player.speed and not thisLevel.CheckIfHitWall((player.x + player.speed, player.y), (player.nearestRow, player.nearestCol)):
+			player.velX = player.speed
+			player.velY = 0
+			player.nextVelX = 0
+		elif player.nextVelX == -player.speed and not thisLevel.CheckIfHitWall((player.x - player.speed, player.y), (player.nearestRow, player.nearestCol)):
+			player.velX = -player.speed
+			player.velY = 0
+			player.nextVelX = 0
+		elif player.nextVelY == -player.speed and not thisLevel.CheckIfHitWall((player.x, player.y - player.speed), (player.nearestRow, player.nearestCol)):
+			player.velX = 0
+			player.velY = -player.speed
+			player.nextVelY = 0
+		elif player.nextVelY == player.speed and not thisLevel.CheckIfHitWall((player.x, player.y + player.speed), (player.nearestRow, player.nearestCol)):
+			player.velX = 0
+			player.velY = player.speed
+			player.nextVelY = 0
 
 	elif thisGame.mode == 3:
 		if pygame.key.get_pressed()[ pygame.K_RETURN ] or (js!=None and js.get_button(JS_STARTBUTTON)):
@@ -1433,7 +1451,7 @@ def GetCrossRef ():
 			if not thisID in NO_GIF_TILES:
 				tileIDImage[ thisID ] = pygame.image.load(os.path.join(SCRIPT_PATH,"res","tiles",str_splitBySpace[1] + ".gif")).convert()
 			else:
-			        tileIDImage[ thisID ] = pygame.Surface((TILE_WIDTH,TILE_HEIGHT))
+							tileIDImage[ thisID ] = pygame.Surface((TILE_WIDTH,TILE_HEIGHT))
 
 			# change colors in tileIDImage to match maze colors
 			for y in range(0, TILE_WIDTH, 1):
@@ -1491,43 +1509,43 @@ window = pygame.display.set_mode( thisGame.screenSize, pygame.HWSURFACE | pygame
 # initialise the joystick
 jsCount = pygame.joystick.get_count()
 if jsCount>0:
-  if jsCount == 1:
-    js = pygame.joystick.Joystick(0)
-    js1 = js
-    js2 = js
-    js3 = js
-    js4 = js
-    js1.init()
-  if jsCount == 2:
-    js = pygame.joystick.Joystick(0)
-    js1 = pygame.joystick.Joystick(0)
-    js2 = pygame.joystick.Joystick(0)
-    js3 = pygame.joystick.Joystick(1)
-    js4 = pygame.joystick.Joystick(1)
-    js1.init()
-    js3.init()
-  if jsCount == 3:
-    js = pygame.joystick.Joystick(0)
-    js1 = pygame.joystick.Joystick(0)
-    js2 = pygame.joystick.Joystick(0)
-    js3 = pygame.joystick.Joystick(1)
-    js4 = pygame.joystick.Joystick(2)
-    js1.init()
-    js3.init()
-    js4.init()
-  if jsCount >= 4:
-    js = pygame.joystick.Joystick(0)
-    js1 = pygame.joystick.Joystick(0)
-    js2 = pygame.joystick.Joystick(1)
-    js3 = pygame.joystick.Joystick(2)
-    js4 = pygame.joystick.Joystick(3)
-    js1.init()
-    js2.init()
-    js3.init()
-    js4.init()
-  # if JS_DEVNUM<pygame.joystick.get_count(): js=pygame.joystick.Joystick(JS_DEVNUM)
-  # else: js=pygame.joystick.Joystick(0)
-  # js.init()
+	if jsCount == 1:
+		js = pygame.joystick.Joystick(0)
+		js1 = js
+		js2 = js
+		js3 = js
+		js4 = js
+		js1.init()
+	if jsCount == 2:
+		js = pygame.joystick.Joystick(0)
+		js1 = pygame.joystick.Joystick(0)
+		js2 = pygame.joystick.Joystick(0)
+		js3 = pygame.joystick.Joystick(1)
+		js4 = pygame.joystick.Joystick(1)
+		js1.init()
+		js3.init()
+	if jsCount == 3:
+		js = pygame.joystick.Joystick(0)
+		js1 = pygame.joystick.Joystick(0)
+		js2 = pygame.joystick.Joystick(0)
+		js3 = pygame.joystick.Joystick(1)
+		js4 = pygame.joystick.Joystick(2)
+		js1.init()
+		js3.init()
+		js4.init()
+	if jsCount >= 4:
+		js = pygame.joystick.Joystick(0)
+		js1 = pygame.joystick.Joystick(0)
+		js2 = pygame.joystick.Joystick(1)
+		js3 = pygame.joystick.Joystick(2)
+		js4 = pygame.joystick.Joystick(3)
+		js1.init()
+		js2.init()
+		js3.init()
+		js4.init()
+	# if JS_DEVNUM<pygame.joystick.get_count(): js=pygame.joystick.Joystick(JS_DEVNUM)
+	# else: js=pygame.joystick.Joystick(0)
+	# js.init()
 else: js=None
 
 while True:
@@ -1633,7 +1651,7 @@ while True:
 		player.Draw()
 
 		if thisGame.mode == 3:
-		        screen.blit(thisGame.imHiscores,(HS_XOFFSET,HS_YOFFSET))
+						screen.blit(thisGame.imHiscores,(HS_XOFFSET,HS_YOFFSET))
 
 	if thisGame.mode == 5:
 		thisGame.DrawNumber (thisGame.ghostValue / 2, (player.x - thisGame.screenPixelPos[0] - 4, player.y - thisGame.screenPixelPos[1] + 6))
