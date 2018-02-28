@@ -75,8 +75,8 @@ img_Background = pygame.image.load(os.path.join(SCRIPT_PATH,"res","backgrounds",
 
 
 snd_pellet = {}
-# snd_pellet[0] = pygame.mixer.Sound(os.path.join(SCRIPT_PATH,"res","sounds","pellet1.wav"))
-# snd_pellet[1] = pygame.mixer.Sound(os.path.join(SCRIPT_PATH,"res","sounds","pellet2.wav"))
+snd_pellet[0] = pygame.mixer.Sound(os.path.join(SCRIPT_PATH,"res","sounds","pellet1.wav"))
+snd_pellet[1] = pygame.mixer.Sound(os.path.join(SCRIPT_PATH,"res","sounds","pellet2.wav"))
 # snd_powerpellet = pygame.mixer.Sound(os.path.join(SCRIPT_PATH,"res","sounds","powerpellet.wav"))
 # snd_eatgh = pygame.mixer.Sound(os.path.join(SCRIPT_PATH,"res","sounds","eatgh2.wav"))
 # snd_fruitbounce = pygame.mixer.Sound(os.path.join(SCRIPT_PATH,"res","sounds","fruitbounce.wav"))
@@ -1036,7 +1036,7 @@ class level ():
 					if result == tileID[ 'pellet' ]:
 						# got a pellet
 						thisLevel.SetMapTile((iRow, iCol), 0)
-						# snd_pellet[player.pelletSndNum].play()
+						snd_pellet[player.pelletSndNum].play()
 						player.pelletSndNum = 1 - player.pelletSndNum
 
 						thisLevel.pellets -= 1
