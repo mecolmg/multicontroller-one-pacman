@@ -67,7 +67,7 @@ clock = pygame.time.Clock()
 pygame.init()
 
 window = pygame.display.set_mode((1, 1))
-pygame.display.set_caption("Pacman")
+pygame.display.set_caption("Fatman")
 
 screen = pygame.display.get_surface()
 
