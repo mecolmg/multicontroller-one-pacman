@@ -75,13 +75,16 @@ img_Background = pygame.image.load(os.path.join(SCRIPT_PATH,"res","backgrounds",
 
 
 snd_pellet = {}
-snd_pellet[0] = pygame.mixer.Sound(os.path.join(SCRIPT_PATH,"res","sounds","pellet1.wav"))
-snd_pellet[1] = pygame.mixer.Sound(os.path.join(SCRIPT_PATH,"res","sounds","pellet2.wav"))
-# snd_powerpellet = pygame.mixer.Sound(os.path.join(SCRIPT_PATH,"res","sounds","powerpellet.wav"))
-# snd_eatgh = pygame.mixer.Sound(os.path.join(SCRIPT_PATH,"res","sounds","eatgh2.wav"))
+snd_death = pygame.mixer.Sound(os.path.join(SCRIPT_PATH,"res","sounds","death.wav"))
+snd_win = pygame.mixer.Sound(os.path.join(SCRIPT_PATH,"res","sounds","win.wav"))
+snd_song = pygame.mixer.Sound(os.path.join(SCRIPT_PATH,"res","sounds","song.wav"))
+#snd_pellet[0] = pygame.mixer.Sound(os.path.join(SCRIPT_PATH,"res","sounds","pellet1.wav"))
+#snd_pellet[1] = pygame.mixer.Sound(os.path.join(SCRIPT_PATH,"res","sounds","pellet2.wav"))
+snd_powerpellet = pygame.mixer.Sound(os.path.join(SCRIPT_PATH,"res","sounds","powerpellet.wav"))
+snd_eatgh = pygame.mixer.Sound(os.path.join(SCRIPT_PATH,"res","sounds","eatgh2.wav"))
 # snd_fruitbounce = pygame.mixer.Sound(os.path.join(SCRIPT_PATH,"res","sounds","fruitbounce.wav"))
-# snd_eatfruit = pygame.mixer.Sound(os.path.join(SCRIPT_PATH,"res","sounds","eatfruit.wav"))
-# snd_extralife = pygame.mixer.Sound(os.path.join(SCRIPT_PATH,"res","sounds","extralife.wav"))
+snd_eatfruit = pygame.mixer.Sound(os.path.join(SCRIPT_PATH,"res","sounds","eatfruit.wav"))
+snd_extralife = pygame.mixer.Sound(os.path.join(SCRIPT_PATH,"res","sounds","extralife.wav"))
 
 ghostcolor = {}
 ghostcolor[0] = (255, 0, 0, 255)
@@ -214,6 +217,7 @@ class game ():
 		self.imReady = pygame.image.load(os.path.join(SCRIPT_PATH,"res","text","ready.gif")).convert()
 		self.imLogo = pygame.image.load(os.path.join(SCRIPT_PATH,"res","text","logo.gif")).convert()
 		self.imHiscores = self.makehiscorelist()
+                snd_song.play()
 
 	def StartNewGame (self):
 		self.levelNum = 1
@@ -222,6 +226,7 @@ class game ():
 
 		self.SetMode( 4 )
 		thisLevel.LoadLevel( thisGame.GetLevelNum() )
+                snd_song.stop()
 
 	def AddToScore (self, amount):
 
@@ -229,7 +234,7 @@ class game ():
 
 		for specialScore in extraLifeSet:
 			if self.score < specialScore and self.score + amount >= specialScore:
-				# snd_extralife.play()
+				snd_extralife.play()
 				thisGame.lives += 1
 
 		self.score += amount
@@ -859,6 +864,7 @@ class pacman ():
 
 					if ghosts[i].state == 1:
 						# ghost is normal
+                                                snd_death.play()
 						thisGame.SetMode( 2 )
 
 					elif ghosts[i].state == 2:
@@ -867,7 +873,7 @@ class pacman ():
 						# make them run
 						thisGame.AddToScore(thisGame.ghostValue)
 						thisGame.ghostValue = thisGame.ghostValue * 2
-						# snd_eatgh.play()
+						snd_eatgh.play()
 
 						ghosts[i].state = 3
 						ghosts[i].speed = ghosts[i].speed * 4
@@ -887,7 +893,7 @@ class pacman ():
 					thisFruit.active = False
 					thisGame.fruitTimer = 0
 					thisGame.fruitScoreTimer = 120
-					# snd_eatfruit.play()
+					snd_eatfruit.play()
 
 		else:
 			# we're going to hit a wall -- stop moving
@@ -1036,7 +1042,7 @@ class level ():
 					if result == tileID[ 'pellet' ]:
 						# got a pellet
 						thisLevel.SetMapTile((iRow, iCol), 0)
-						snd_pellet[player.pelletSndNum].play()
+						#snd_pellet[player.pelletSndNum].play()
 						player.pelletSndNum = 1 - player.pelletSndNum
 
 						thisLevel.pellets -= 1
@@ -1046,6 +1052,7 @@ class level ():
 						if thisLevel.pellets == 0:
 							# no more pellets left!
 							# WON THE LEVEL
+                                                        snd_win.play()
 							thisGame.SetMode( 6 )
 
 
@@ -1054,7 +1061,7 @@ class level ():
 						# got a power pellet
 						thisLevel.SetMapTile((iRow, iCol), 0)
 						pygame.mixer.stop()
-						# snd_powerpellet.play()
+						snd_powerpellet.play()
 
 						thisGame.AddToScore(100)
 						thisGame.ghostValue = 200
