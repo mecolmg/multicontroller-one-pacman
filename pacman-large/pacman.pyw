@@ -1555,7 +1555,7 @@ if jsCount>0:
 	# if JS_DEVNUM<pygame.joystick.get_count(): js=pygame.joystick.Joystick(JS_DEVNUM)
 	# else: js=pygame.joystick.Joystick(0)
 	# js.init()
-else: js=None
+else: js=js1=js2=js3=js4=None
 
 while True:
 
