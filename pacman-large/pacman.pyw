@@ -1474,6 +1474,7 @@ def GetCrossRef ():
 		lineNum += 1
 
 def RandomizeControls():
+	global js1, js2, js3, js4
 	controllers = [js1, js2, js3, js4]
 	random.shuffle(controllers)
 	[js1, js2, js3, js4] = controllers
