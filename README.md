@@ -1,5 +1,25 @@
-Pacman by David Reilly
+Multicontroller Pacman
 ======================
+Modified version of Pacman with support for up to 4 controllers.
+
+Each Player is randomly assigned directions for which they have control.
+Upon obtaining a Power Pellet, the controls will randomize again, leaving
+players to figure out which controls they have, typically through pure 
+rage and frustration at the other players.
+
+Modifications to the original game were only added to the pacman-large directory.
+
+Some other features added include:
+- Traditional Pacman pre-emptive turning (pressing a direction even if that
+direction is not possible at the moment will head that direction once it is 
+possible)
+- Reskined sprites and pixelart
+- Custom soundtrack
+- Support for several types of wired and wireless controllers (Tested: 
+Xbox, PS4, PS3, SNES, Joycons, and Keyboard)
+
+(Original Readme) Pacman by David Reilly
+========================================
 With contributions by Andy Sommerville (2007)
 
 Github project page:
